@@ -31,7 +31,7 @@ contract Token is Initializable, ERC20, AccessControl {
 
     function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
         // Can only transfer to whitelisted users if in onlyWhitelist mode
-        if (onlyWhitelist == true) {
+        if (onlyWhitelist == true && to != address(0)) {
             require(hasRole(WHITELIST_ROLE, to), "NO WHITELIST_ROLE");
             require(hasRole(WHITELIST_ROLE, from), "NO WHITELIST_ROLE");
         }
