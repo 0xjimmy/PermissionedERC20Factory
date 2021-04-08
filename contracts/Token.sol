@@ -2,16 +2,22 @@
 
 pragma solidity 0.8.1;
 
+import './openzeppelin/Initializable.sol';
 import './openzeppelin/erc20/ERC20.sol';
 import './openzeppelin/AccessControl.sol';
 
-contract Token is ERC20, AccessControl {
+contract Token is Initializable, ERC20, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant WHITELIST_ROLE = keccak256("WHITELIST_ROLE");
     bool public onlyWhitelist;
 
-    constructor(string memory name, string memory symbol, address owner, bool whitelistState) ERC20(name, symbol) {
+    constructor() {}
+
+    function initialize(string memory name, string memory symbol, uint8 decimals, address owner, bool whitelistState) public initializer {
         require(owner != address(0), "No Owner");
+        _name = name;
+        _symbol = symbol;
+	    _decimals = decimals;
         onlyWhitelist = whitelistState;
         _setupRole(DEFAULT_ADMIN_ROLE, owner);
         _setupRole(MINTER_ROLE, owner);

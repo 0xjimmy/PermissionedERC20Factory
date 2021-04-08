@@ -2,15 +2,26 @@
 
 pragma solidity 0.8.1;
 
-import './Token.sol';
+import './openzeppelin/Clones.sol';
+
+interface ITokenInit { 
+    function initialize(string memory name, string memory symbol, uint8 decimals, address owner, bool whitelistState) external; 
+}
 
 contract TokenFactory {
 
-    event CreateToken(string name, string symbol, address owner, bool whitelistState, address contractAddress);
+    address public tokenTemplate;
 
-    function createToken(string memory name, string memory symbol, address owner, bool whitelistState) public returns (address) {
-        Token _token = new Token(name, symbol, owner, whitelistState);
-        emit CreateToken(name, symbol, owner, whitelistState, address(_token));
-        return address(_token); 
+    constructor(address _tokenTemplate) {
+        tokenTemplate = _tokenTemplate;
+    }
+
+    event CreateToken(string name, string symbol, uint8 decimals, address owner, bool whitelistState, address contractAddress);
+
+    function createToken(string memory name, string memory symbol, uint8 decimals, address owner, bool whitelistState) public returns (address) {
+        address tokenAddress = Clones.clone(tokenTemplate);
+        ITokenInit(tokenAddress).initialize(name, symbol, decimals, owner, whitelistState);
+        emit CreateToken(name, symbol, decimals, owner, whitelistState, tokenAddress);
+        return tokenAddress; 
     }
 }
