@@ -6,20 +6,30 @@
 const hre = require("hardhat");
 
 async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile 
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
+  
+  const Token = await hre.ethers.getContractFactory('Token');
+  const token = await Token.deploy();
+  await token.deployed();
 
-  // We get the contract to deploy
+  console.log("Token template deployed to:", token.address);
+
   const TokenFactory = await hre.ethers.getContractFactory("TokenFactory");
-  const tokenFactory = await TokenFactory.deploy();
+  const tokenFactory = await TokenFactory.deploy(token.address);
 
   await tokenFactory.deployed();
 
   console.log("TokenFactory deployed to:", tokenFactory.address);
+
+  const newToken = await tokenFactory.callStatic.createToken("TestToken", "TEST", 18, tokenFactory.address, true);
+  await tokenFactory.createToken("TestToken", "TEST", 18, tokenFactory.address, true);
+
+  console.log("New Token deployed via TokenFactory to:", newToken);
+
+  const deployedToken = Token.attach(newToken);
+  const name = await deployedToken.name();
+  const symbol = await deployedToken.symbol();
+  const decimals = await deployedToken.decimals();
+  console.log("Token Vanity:", { name, symbol, decimals })
 }
 
 // We recommend this pattern to be able to use async/await everywhere
